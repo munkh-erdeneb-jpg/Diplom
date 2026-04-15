@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дипломын ажил — ChromaSense AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --accent: #8B1A4A;
+    --accent-light: #f5e6ed;
+    --text: #1a1a1a;
+    --text-muted: #555;
+    --border: #ccc;
+    --bg-formula: #fdf6f9;
+  }
+
+  body {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    font-size: 12pt;
+    line-height: 1.8;
+    color: var(--text);
+    background: #e8e8e8;
+  }
+
+  /* ── Page simulation ── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 12mm auto;
+    background: #fff;
+    padding: 25mm 20mm 25mm 30mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    position: relative;
+    page-break-after: always;
+  }
+
+  /* ── Cover page ── */
+  .cover { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 247mm; }
+  .cover .uni-name { font-size: 13pt; font-weight: bold; letter-spacing: 0.03em; line-height: 1.5; border-bottom: 2px solid var(--accent); padding-bottom: 6mm; width: 100%; }
+  .cover .faculty { font-size: 11pt; margin-top: 4mm; color: var(--text-muted); }
+  .cover .title-block { margin-top: 20mm; }
+  .cover .label { font-size: 11pt; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4mm; }
+  .cover .main-title { font-size: 18pt; font-weight: bold; color: var(--accent); line-height: 1.4; margin-bottom: 3mm; }
+  .cover .sub-title { font-size: 13pt; color: var(--text-muted); font-style: italic; }
+  .cover .meta-block { margin-top: 16mm; text-align: left; width: 100%; font-size: 11pt; line-height: 2; }
+  .cover .meta-block table { border-collapse: collapse; width: 100%; }
+  .cover .meta-block td { padding: 1mm 3mm; }
+  .cover .meta-block td:first-child { color: var(--text-muted); width: 45%; }
+  .cover .year { font-size: 12pt; font-weight: bold; margin-top: 10mm; }
+
+  /* ── TOC ── */
+  .toc-title { font-size: 15pt; font-weight: bold; text-align: center; margin-bottom: 8mm; color: var(--accent); letter-spacing: 0.05em; }
+  .toc-item { display: flex; justify-content: space-between; align-items: baseline; padding: 1.5mm 0; border-bottom: 1px dotted #ccc; font-size: 11pt; }
+  .toc-item.chapter { font-weight: bold; font-size: 12pt; margin-top: 3mm; }
+  .toc-item.sub { padding-left: 8mm; font-size: 10.5pt; }
+  .toc-num { color: var(--accent); min-width: 12mm; }
+  .toc-pg { min-width: 10mm; text-align: right; color: var(--text-muted); }
+
+  /* ── Chapter headers ── */
+  .chapter-heading {
+    font-size: 16pt; font-weight: bold; color: var(--accent);
+    border-left: 5px solid var(--accent); padding-left: 5mm;
+    margin-bottom: 6mm; margin-top: 2mm;
+    page-break-after: avoid;
+  }
+  .section-heading {
+    font-size: 13pt; font-weight: bold; color: var(--text);
+    margin-top: 7mm; margin-bottom: 3mm;
+    page-break-after: avoid;
+  }
+  .subsection-heading {
+    font-size: 12pt; font-weight: bold; font-style: italic;
+    margin-top: 5mm; margin-bottom: 2mm;
+    page-break-after: avoid;
+  }
+
+  /* ── Typography ── */
+  p { margin-bottom: 4mm; text-align: justify; }
+  ul, ol { margin: 2mm 0 4mm 8mm; }
+  li { margin-bottom: 1.5mm; }
+
+  /* ── Formula boxes ── */
+  .formula-box {
+    background: var(--bg-formula);
+    border: 1px solid #d4a0b8;
+    border-left: 4px solid var(--accent);
+    padding: 4mm 6mm;
+    margin: 4mm 0;
+    font-family: 'Courier New', monospace;
+    font-size: 11pt;
+    line-height: 2;
+    border-radius: 2px;
+    page-break-inside: avoid;
+  }
+  .formula-box .formula-label {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 10pt; color: var(--accent); font-weight: bold;
+    margin-bottom: 1mm; display: block;
+    font-style: italic;
+  }
+  .math { font-style: italic; }
+  sup { font-size: 0.75em; vertical-align: super; }
+  sub { font-size: 0.75em; vertical-align: sub; }
+
+  /* ── Tables ── */
+  table.data-table {
+    width: 100%; border-collapse: collapse;
+    margin: 4mm 0 6mm 0; font-size: 10.5pt;
+    page-break-inside: auto;
+  }
+  table.data-table th {
+    background: var(--accent); color: #fff;
+    padding: 2.5mm 3mm; text-align: left;
+    font-weight: bold; font-size: 10pt;
+  }
+  table.data-table td {
+    padding: 2mm 3mm; border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.data-table tr:nth-child(even) td { background: #fdf0f5; }
+  table.data-table tr:hover td { background: #f9e0ec; }
+  .table-caption {
+    font-size: 10pt; text-align: center; margin-bottom: 2mm;
+    font-style: italic; color: var(--text-muted);
+  }
+
+  /* ── Accuracy bars ── */
+  .bar-chart { margin: 4mm 0 6mm 0; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 2.5mm; font-size: 10.5pt; }
+  .bar-label { width: 52mm; font-weight: bold; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #f0e0e8; height: 7mm; border-radius: 2px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 2px; display: flex; align-items: center; padding-left: 2mm; }
+  .bar-fill.best { background: #5a1030; }
+  .bar-pct { font-size: 9.5pt; color: #fff; font-weight: bold; }
+  .bar-pct-outside { font-size: 10pt; color: var(--text-muted); margin-left: 2mm; }
+
+  /* ── Architecture diagram ── */
+  .arch-diagram { border: 1.5px solid var(--accent); border-radius: 4px; padding: 5mm; margin: 4mm 0; font-size: 10pt; }
+  .arch-row { display: flex; gap: 3mm; margin: 2mm 0; justify-content: center; flex-wrap: wrap; }
+  .arch-box {
+    border: 1.5px solid var(--accent); border-radius: 3px;
+    padding: 2mm 4mm; text-align: center; background: var(--accent-light);
+    font-size: 9.5pt; min-width: 28mm;
+  }
+  .arch-box.dark { background: var(--accent); color: #fff; }
+  .arch-box.mid { background: #f0dde8; }
+  .arch-arrow { text-align: center; color: var(--accent); font-size: 14pt; line-height: 1; }
+  .arch-label { text-align: center; font-weight: bold; font-size: 9pt; color: var(--text-muted); margin-top: 1mm; }
+
+  /* ── Info box ── */
+  .info-box {
+    background: #fff8fb; border: 1px solid #d4a0b8; border-radius: 3px;
+    padding: 3mm 5mm; margin: 4mm 0; font-size: 10.5pt;
+  }
+  .info-box strong { color: var(--accent); }
+
+  /* ── Footer ── */
+  .page-footer {
+    position: absolute; bottom: 12mm; left: 30mm; right: 20mm;
+    display: flex; justify-content: space-between;
+    font-size: 9pt; color: var(--text-muted);
+    border-top: 1px solid var(--border); padding-top: 2mm;
+  }
+
+  /* ── Divider ── */
+  hr.section-div { border: none; border-top: 1px solid #e0c0d0; margin: 6mm 0; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #f8f4f6; border: 1px solid #d0b0c0;
+    padding: 3mm 5mm; font-family: 'Courier New', monospace;
+    font-size: 9.5pt; margin: 3mm 0; border-radius: 2px;
+    white-space: pre-wrap; line-height: 1.6;
+  }
+
+  /* ── Matrix ── */
+  .matrix-wrap { overflow-x: auto; margin: 2mm 0; }
+  .matrix { border-left: 2px solid var(--text); border-right: 2px solid var(--text); display: inline-block; padding: 2mm 4mm; }
+  .matrix table { border-collapse: collapse; }
+  .matrix table td { padding: 0.5mm 3mm; text-align: right; font-family: 'Courier New', monospace; font-size: 10.5pt; }
+
+  /* ── Season table colors ── */
+  .season-spring { background: #fff9e6; }
+  .season-summer { background: #e6f0ff; }
+  .season-autumn { background: #fff3e6; }
+  .season-winter { background: #f0e6ff; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; box-shadow: none; page-break-after: always; }
+    .page:last-child { page-break-after: avoid; }
+    @page { size: A4; margin: 0; }
+    .bar-fill { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    table.data-table th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .arch-box.dark { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .chapter-heading { color: #8B1A4A !important; }
+  }
+
+  @media screen {
+    .print-btn {
+      position: fixed; top: 12px; right: 12px; z-index: 999;
+      background: var(--accent); color: #fff; border: none;
+      padding: 8px 18px; border-radius: 4px; cursor: pointer;
+      font-size: 11pt; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .print-btn:hover { background: #5a1030; }
+  }
+  @media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨 Хэвлэх / PDF</button>
+
+<!-- ═══════════════════════════════════════════════════════ COVER PAGE -->
+<div class="page">
+  <div class="cover">
+    <div style="width:100%;">
+      <div class="uni-name">МОНГОЛ УЛСЫН БОЛОВСРОЛЫН ИХ СУРГУУЛЬ</div>
+      <div class="faculty">Мэдээлэл технологийн сургууль<br>Компьютерийн ухааны тэнхим</div>
+    </div>
+
+    <div class="title-block" style="width:100%;">
+      <div class="label">Бакалаврын дипломын ажил</div>
+      <div class="main-title">ChromaSense AI</div>
+      <div class="sub-title">Хиймэл оюун ухаанд суурилсан хувцасны өнгө зөвлөгч систем</div>
+      <div style="margin-top:8mm; display:flex; justify-content:center;">
+        <div style="width:60mm; height:1.5px; background:var(--accent);"></div>
+      </div>
+    </div>
+
+    <div class="meta-block">
+      <table>
+        <tr><td>Оюутны нэр:</td><td><strong>__________________________</strong></td></tr>
+        <tr><td>Оюутны код:</td><td>__________________________</td></tr>
+        <tr><td>Удирдагч багш:</td><td>__________________________</td></tr>
+        <tr><td>Хамгаалсан огноо:</td><td>2025–2026 оны хичээлийн жил</td></tr>
+        <tr><td>Чиглэл:</td><td>Компьютерийн ухаан (B.Sc.)</td></tr>
+      </table>
+    </div>
+
+    <div class="year">Улаанбаатар — 2026</div>
+  </div>
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span>
+    <span>Монгол улсын боловсролын их сургууль, 2026</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ TABLE OF CONTENTS -->
+<div class="page">
+  <div class="toc-title">АГУУЛГА</div>
+
+  <div class="toc-item chapter"><span class="toc-num">—</span><span>Товчилсон үгийн жагсаалт</span><span class="toc-pg">3</span></div>
+  <div class="toc-item chapter"><span class="toc-num">—</span><span>Хураангуй (Abstract)</span><span class="toc-pg">3</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">1.</span><span>Оршил</span><span class="toc-pg">4</span></div>
+  <div class="toc-item sub"><span class="toc-num">1.1</span><span>Судалгааны асуудал ба актуальчлал</span><span class="toc-pg">4</span></div>
+  <div class="toc-item sub"><span class="toc-num">1.2</span><span>Судалгааны зорилго ба зорилт</span><span class="toc-pg">4</span></div>
+  <div class="toc-item sub"><span class="toc-num">1.3</span><span>Ажлын хамрах хүрээ</span><span class="toc-pg">4</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">2.</span><span>Өнгийн шинжлэх ухааны онолын үндэс</span><span class="toc-pg">5</span></div>
+  <div class="toc-item sub"><span class="toc-num">2.1</span><span>CIE LAB өнгийн орон</span><span class="toc-pg">5</span></div>
+  <div class="toc-item sub"><span class="toc-num">2.2</span><span>ITA (Individual Typology Angle)</span><span class="toc-pg">5</span></div>
+  <div class="toc-item sub"><span class="toc-num">2.3</span><span>Fitzpatrick арьсны ангилал</span><span class="toc-pg">6</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">3.</span><span>12 улирлын өнгийн систем</span><span class="toc-pg">6</span></div>
+  <div class="toc-item sub"><span class="toc-num">3.1</span><span>Онолын суурь</span><span class="toc-pg">6</span></div>
+  <div class="toc-item sub"><span class="toc-num">3.2</span><span>12 улирлын ангилал ба шинж чанар</span><span class="toc-pg">7</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">4.</span><span>Датасет ба өгөгдлийн урьдчилан боловсруулалт</span><span class="toc-pg">7</span></div>
+  <div class="toc-item sub"><span class="toc-num">4.1</span><span>UTKFace датасет</span><span class="toc-pg">7</span></div>
+  <div class="toc-item sub"><span class="toc-num">4.2</span><span>MediaPipe нүүрний илрүүлэлт</span><span class="toc-pg">8</span></div>
+  <div class="toc-item sub"><span class="toc-num">4.3</span><span>IQR аргаар гажуудал арилгах</span><span class="toc-pg">8</span></div>
+  <div class="toc-item sub"><span class="toc-num">4.4</span><span>Өгөгдлийн өсгөлт (Augmentation)</span><span class="toc-pg">8</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">5.</span><span>Онцлог шинжийн инженерчлэл</span><span class="toc-pg">9</span></div>
+  <div class="toc-item sub"><span class="toc-num">5.1</span><span>42 онцлог шинжийн тойм</span><span class="toc-pg">9</span></div>
+  <div class="toc-item sub"><span class="toc-num">5.2</span><span>Арьсны онцлог шинж (18)</span><span class="toc-pg">9</span></div>
+  <div class="toc-item sub"><span class="toc-num">5.3</span><span>Үсний, нүдний болон контрастын онцлог шинж</span><span class="toc-pg">10</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">6.</span><span>Машин сургалтын загвар</span><span class="toc-pg">11</span></div>
+  <div class="toc-item sub"><span class="toc-num">6.1</span><span>Загваруудын харьцуулалт</span><span class="toc-pg">11</span></div>
+  <div class="toc-item sub"><span class="toc-num">6.2</span><span>Ensemble загвар сонгосон шалтгаан</span><span class="toc-pg">12</span></div>
+  <div class="toc-item sub"><span class="toc-num">6.3</span><span>Гипер параметрүүд ба сургалтын дамжлага</span><span class="toc-pg">12</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">7.</span><span>Системийн архитектур</span><span class="toc-pg">13</span></div>
+  <div class="toc-item sub"><span class="toc-num">7.1</span><span>Ерөнхий архитектур</span><span class="toc-pg">13</span></div>
+  <div class="toc-item sub"><span class="toc-num">7.2</span><span>FastAPI backend endpoints</span><span class="toc-pg">13</span></div>
+  <div class="toc-item sub"><span class="toc-num">7.3</span><span>Frontend урсгал</span><span class="toc-pg">14</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">8.</span><span>Үр дүн ба үнэлгээ</span><span class="toc-pg">14</span></div>
+  <div class="toc-item sub"><span class="toc-num">8.1</span><span>Загварын нарийвчлал</span><span class="toc-pg">14</span></div>
+  <div class="toc-item sub"><span class="toc-num">8.2</span><span>Cross-validation үнэлгээ</span><span class="toc-pg">14</span></div>
+
+  <div class="toc-item chapter"><span class="toc-num">9.</span><span>Дүгнэлт</span><span class="toc-pg">15</span></div>
+  <div class="toc-item chapter"><span class="toc-num">10.</span><span>Ном зүй</span><span class="toc-pg">16</span></div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>2</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ ABSTRACT + ABBREV -->
+<div class="page">
+  <div class="chapter-heading">Товчилсон үгийн жагсаалт</div>
+  <table class="data-table" style="margin-bottom:6mm;">
+    <thead><tr><th style="width:28%">Товчилсон үг</th><th>Тайлбар</th></tr></thead>
+    <tbody>
+      <tr><td><strong>AI</strong></td><td>Artificial Intelligence — Хиймэл оюун ухаан</td></tr>
+      <tr><td><strong>ML</strong></td><td>Machine Learning — Машин сургалт</td></tr>
+      <tr><td><strong>CIE LAB</strong></td><td>Commission Internationale de l'Éclairage — Олон улсын гэрэлтүүлгийн комиссын өнгийн орон</td></tr>
+      <tr><td><strong>ITA</strong></td><td>Individual Typology Angle — Хувь хүний типологийн өнцөг</td></tr>
+      <tr><td><strong>RGB</strong></td><td>Red-Green-Blue — Улаан-ногоон-цэнхэр өнгийн загвар</td></tr>
+      <tr><td><strong>XYZ</strong></td><td>CIE 1931 XYZ өнгийн орон</td></tr>
+      <tr><td><strong>API</strong></td><td>Application Programming Interface — Програм хангамжийн интерфэйс</td></tr>
+      <tr><td><strong>FastAPI</strong></td><td>Python хэл дээр суурилсан вэб framework</td></tr>
+      <tr><td><strong>GBM</strong></td><td>Gradient Boosting Machine — Градиент нэмэлтийн арга</td></tr>
+      <tr><td><strong>RF</strong></td><td>Random Forest — Санамсаргүй ой загвар</td></tr>
+      <tr><td><strong>SVM</strong></td><td>Support Vector Machine — Тулгуур векторын машин</td></tr>
+      <tr><td><strong>MLP</strong></td><td>Multi-Layer Perceptron — Олон давхаргат перцептрон</td></tr>
+      <tr><td><strong>KNN</strong></td><td>K-Nearest Neighbors — K хамгийн ойрын хөршийн алгоритм</td></tr>
+      <tr><td><strong>IQR</strong></td><td>Interquartile Range — Дөрөвний хоорондын зай</td></tr>
+      <tr><td><strong>HSV</strong></td><td>Hue-Saturation-Value — Өнгийн тон-ханалт-утга загвар</td></tr>
+      <tr><td><strong>CV</strong></td><td>Cross-Validation — Хөндлөн баталгаажуулалт</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="section-div">
+  <div class="chapter-heading" style="margin-top:5mm;">Хураангуй</div>
+  <p>Энэхүү дипломын ажилд <strong>ChromaSense AI</strong> — хиймэл оюун ухаанд суурилсан хувцасны өнгө зөвлөгч системийн боловсруулалт, туршилт, үнэлгээг танилцуулж байна. Систем нь хэрэглэгчийн нүүрний зургийг оролт болгон авч, MediaPipe FaceLandmarker технологийг ашиглан арьс, үс, нүдний өнгийн шинж чанарыг автоматаар илрүүлнэ. Дараа нь CIE LAB өнгийн орон дах математик хувиргалт, Fitzpatrick арьсны ангилал болон ITA утгыг ашиглан 42 онцлог шинжийг гаргаж авна. Gradient Boosting болон Random Forest ангилагчдын ensemble загварт эдгээр онцлог шинжийг оруулж, хэрэглэгчийн өнгийн улирлын төрлийг (12 улирлын системийн дагуу) 89%-ийн нарийвчлалтайгаар таних боломжтой болсон. Систем нь FastAPI backend болон цэвэр HTML/CSS/JS frontend-ээс бүрдэх вэб програм хэлбэрээр хэрэгжсэн бөгөөд хэрэглэгчид тухайн өнгийн улирлд нийцсэн хувцасны өнгийн зөвлөмжийг шууд хүлээн авна.</p>
+
+  <p><strong>Түлхүүр үгс:</strong> Машин сургалт, өнгийн шинжилгээ, арьсны өнгийн ангилал, CIE LAB, Fitzpatrick, 12 улирлын систем, ensemble загвар, MediaPipe, FastAPI</p>
+
+  <hr class="section-div" style="margin-top:4mm;">
+  <p style="font-size:10.5pt; font-style:italic;"><strong>Abstract (English):</strong> This thesis presents the development, training, and evaluation of ChromaSense AI, an artificial-intelligence-based clothing color recommendation system. The system accepts a facial photograph, extracts skin, hair, and eye color features via MediaPipe FaceLandmarker (478 landmarks), applies CIE LAB color space mathematics, and classifies users into one of 12 seasonal color types using a weighted soft-voting Gradient Boosting + Random Forest ensemble, achieving 89% test accuracy on the UTKFace dataset. The deployed web application provides personalized clothing palette recommendations via a FastAPI backend and vanilla JS frontend.</p>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>3</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 1: INTRODUCTION -->
+<div class="page">
+  <div class="chapter-heading">1. Оршил</div>
+
+  <div class="section-heading">1.1 Судалгааны асуудал ба актуальчлал</div>
+  <p>Орчин үеийн хурдацтай хөгжиж буй дижитал эрин үед хиймэл оюун ухааны технологи нь хүний өдөр тутмын амьдралд улам гүнзгий нэвтэрч байна. Хувцасны өнгө сонгох нь ихэнх хүнд хэцүү даалгавар болдог бөгөөд энэ нь зөвхөн загварын мэдрэмжтэй хамаатай биш, харин хувийн арьсны өнгө, үсний өнгө, нүдний өнгө зэрэг биологийн шинж чанаруудтай нягт холбоотой байдаг.</p>
+
+  <p>Өнгийн шинжилгээний мэргэжилтнүүд хэдэн зуун жилийн туршид арьсны өнгийн онцлогт тохирсон өнгийн палитрыг тодорхойлж ирсэн. Гэвч энэ мэдлэгийг ашиглахад мэргэжилтний биечилсэн зөвлөгөө шаардагддаг байсан тул олон хүнд хүрхэн байдаг. Иймд хиймэл оюун ухааны аргыг ашиглан энэ мэдлэгийг автоматчилж, хэрэглэгч бүрт хүртээмжтэй болгох нь чухал ач холбогдолтой юм.</p>
+
+  <p>Одоогийн байдлаар арьсны өнгийн ангилалд зориулсан олон нийтэд нээлттэй, нарийн математик суурьтай систем хязгаарлагдмал байна. Ялангуяа монгол болон ази гаралтай хүмүүсийн арьсны өнгийн онцлогийг тусгасан систем бараг байхгүй байна. Энэ судалгааны ажил нь тэрхүү цоорхойг нөхөх зорилготой.</p>
+
+  <div class="section-heading">1.2 Судалгааны зорилго ба зорилт</div>
+  <p><strong>Үндсэн зорилго:</strong> Хэрэглэгчийн нүүрний зурагт тулгуурлан өнгийн улирлын ангиллыг автоматаар тодорхойлж, тохирсон хувцасны өнгийн зөвлөмж өгдөг хиймэл оюун ухааны систем боловсруулах.</p>
+
+  <p><strong>Зорилтууд:</strong></p>
+  <ol>
+    <li>CIE LAB өнгийн орон болон ITA утгад тулгуурласан математик загвар боловсруулах</li>
+    <li>MediaPipe FaceLandmarker-г ашиглан арьс, үс, нүдний өнгийг автоматаар ялгах алгоритм хэрэгжүүлэх</li>
+    <li>42 онцлог шинжид суурилсан ensemble машин сургалтын загвар бий болгох</li>
+    <li>UTKFace датасет дээр загварыг сургаж, нарийвчлалыг үнэлэх</li>
+    <li>FastAPI болон JavaScript-д суурилсан вэб систем хэрэгжүүлэх</li>
+    <li>12 улирлын өнгийн системийн дагуу хувцасны зөвлөмж гаргах модуль нэмэх</li>
+  </ol>
+
+  <div class="section-heading">1.3 Ажлын хамрах хүрээ</div>
+  <p>Энэхүү ажил нь дараах хамрах хүрээтэй: нүүрний зургийг оролт болгон авч, нүүрний 478 цэгийн байрлалаас арьс, үс, нүдний дундаж өнгийг гаргаж авах; CIE LAB математик хувиргалтаар 42 онцлог шинж тооцоолох; gradient boosting болон random forest ангилагчдын ensemble загвараар 12 улирлын ангиллын аль нэгт хамруулах; мөн тухайн ангиллын хувцасны өнгийн палитр зөвлөх. Систем нь нэг хэрэглэгчид нэг зурагт тулгуурлан зөвлөгөө өгдөг бөгөөд олон хэрэглэгчийн менежмент, хувцасны нэр томьёоны гүнзгий мэдэгдэхүүн нь хамрах хүрээнд ороогүй болно.</p>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>4</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 2: COLOR SCIENCE -->
+<div class="page">
+  <div class="chapter-heading">2. Өнгийн шинжлэх ухааны онолын үндэс</div>
+
+  <div class="section-heading">2.1 CIE LAB өнгийн орон</div>
+  <p>CIE LAB (буюу L*a*b*) бол 1976 онд Олон улсын гэрэлтүүлгийн комисс (CIE) тогтоосон өнгийн орон бөгөөд хүний нүдний өнгийн мэдрэхүйд ойролцоо байдлаар тохируулагдсан. Энэхүү өнгийн орны гол давуу тал нь хоёр өнгийн хоорондох зайг тооцоолоход хүний мэдрэхүйтэй нийцдэг явдал юм. Тиймд энэ ажилд арьсны өнгийг шинжлэхэд CIE LAB-г үндсэн суурь болгон ашигласан.</p>
+
+  <p><strong>RGB → XYZ хувиргалт (D65 гэрлийн стандарт):</strong></p>
+  <p>Эхлээд RGB утгыг гамма залруулгаар шугаман RGB-д хувиргана:</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Томьёо 2.1 — Gamma залруулга (sRGB стандарт)</span>
+    <span class="math">C<sub>linear</sub> = ((C<sub>sRGB</sub> + 0.055) / 1.055)<sup>2.4</sup> &nbsp;&nbsp; хэрэв C<sub>sRGB</sub> &gt; 0.04045</span><br>
+    <span class="math">C<sub>linear</sub> = C<sub>sRGB</sub> / 12.92 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; хэрэв C<sub>sRGB</sub> &le; 0.04045</span>
+  </div>
+
+  <p>Шугаман RGB-г XYZ-д хувиргах матриц (D65 цагаан цэгийн лавлагаа):</p>
+  <div class="formula-box">
+    <span class="formula-label">Томьёо 2.2 — RGB→XYZ хувиргалтын матриц (D65)</span>
+    <div class="matrix-wrap">
+      <span style="font-family:'Times New Roman'; font-style:italic;">[X, Y, Z]<sup>T</sup> = M × [R, G, B]<sup>T</sup> &nbsp;&nbsp; энд:</span><br><br>
+      <div style="display:inline-block; border-left:2px solid #333; border-right:2px solid #333; padding:3mm 4mm; font-family:'Courier New',monospace; font-size:10pt; line-height:2;">
+        0.4124564 &nbsp; 0.3575761 &nbsp; 0.1804375<br>
+        0.2126729 &nbsp; 0.7151522 &nbsp; 0.0721750<br>
+        0.0193339 &nbsp; 0.1191920 &nbsp; 0.9503041
+      </div>
+    </div>
+  </div>
+
+  <p>XYZ-г L*a*b*-д хувиргах (D65 лавлагааны цагаан цэг: X<sub>n</sub>=0.95047, Y<sub>n</sub>=1.0, Z<sub>n</sub>=1.08883):</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Томьёо 2.3 — XYZ → L*a*b* хувиргалт</span>
+    <span class="math">f(t) = ∛t &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; хэрэв t &gt; 0.008856</span><br>
+    <span class="math">f(t) = (903.3 × t + 16) / 116 &nbsp;&nbsp; хэрэв t &le; 0.008856</span><br><br>
+    <span class="math"><strong>L* = 116 × f(Y/Y<sub>n</sub>) − 16</strong></span><br>
+    <span class="math"><strong>a* = 500 × (f(X/X<sub>n</sub>) − f(Y/Y<sub>n</sub>))</strong></span><br>
+    <span class="math"><strong>b* = 200 × (f(Y/Y<sub>n</sub>) − f(Z/Z<sub>n</sub>))</strong></span>
+  </div>
+
+  <p>Энд L* нь гэрэлтэлтийг (0=хар, 100=цагаан), a* нь улаан-ногоон тэнхлэгийг, b* нь шар-цэнхэр тэнхлэгийг илэрхийлнэ.</p>
+
+  <div class="section-heading">2.2 ITA — Individual Typology Angle (Хувь хүний типологийн өнцөг)</div>
+  <p>Chardon et al. (1991) нарын судалгаанд арьсны өнгийн биологийн ангиллыг нэг тоон утгаар илэрхийлэх ITA (Individual Typology Angle) утгыг санал болгосон. Энэхүү утга нь CIE LAB орон дах L* болон b* утгуудаас тооцоологдоно:</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Томьёо 2.4 — ITA тооцоолол (Chardon et al., 1991)</span>
+    <span class="math"><strong>ITA = arctan2(L* − 50, b*) × (180 / π)</strong></span><br><br>
+    <span style="font-size:10pt;">ITA утга их байх тусам арьсны өнгө цайвар, бага байх тусам харанхуй гэж тодорхойлогдоно.</span>
+  </div>
+
+  <div class="section-heading">2.3 Fitzpatrick арьсны ангилал</div>
+  <p>Fitzpatrick (1975) нарын боловсруулсан арьсны фототипийн систем нь арьсны өнгийг I–VI хүртэл зургаан ангид хуваадаг. Энэ ажилд тэрхүү ангиллыг ITA утгаас шууд гаргаж авдаг дараах шалгуурыг ашиглав:</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Томьёо 2.5 — ITA → Fitzpatrick ангилал</span>
+    <span class="math">ITA &gt; 55° &nbsp;→ Тип I &nbsp;&nbsp; (маш цайвар, зэс нэгдэл бага)</span><br>
+    <span class="math">ITA &gt; 41° &nbsp;→ Тип II &nbsp; (цайвар, амархан шарладаг)</span><br>
+    <span class="math">ITA &gt; 28° &nbsp;→ Тип III (дунд зэрэг, аажмаар шарлана)</span><br>
+    <span class="math">ITA &gt; 10° &nbsp;→ Тип IV (хүрэн, мэдэгдэхүйцэд шарлана)</span><br>
+    <span class="math">ITA &gt; −30° → Тип V &nbsp; (харанхуй хүрэн)</span><br>
+    <span class="math">ITA &le; −30° → Тип VI &nbsp;(маш харанхуй)</span>
+  </div>
+
+  <p>Дулааны өнгийн тодорхойлолт: арьсний b* болон a* утгуудаас <em>warmth score</em>-г тооцоолж, RGB-ийн нөлөөг нэмнэ:</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Томьёо 2.6 — Дулааны оноо (Undertone тодорхойлолт)</span>
+    <span class="math">warmth_score = b* − a* × 0.5</span><br>
+    <span class="math">rgb_warmth = (R − B) / 255</span><br>
+    <span class="math">combined = warmth_score × 0.7 + rgb_warmth × 0.3</span><br><br>
+    <span class="math">combined &gt; 5 &nbsp;&nbsp;→ Дулаан (Warm)</span><br>
+    <span class="math">combined &lt; −2 → Хүйтэн (Cool)</span><br>
+    <span class="math">эсрэгээр &nbsp;&nbsp;&nbsp;&nbsp;→ Дунд зэрэг (Neutral)</span>
+  </div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>5</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 3: 12-SEASON -->
+<div class="page">
+  <div class="chapter-heading">3. 12 улирлын өнгийн систем</div>
+
+  <div class="section-heading">3.1 Онолын суурь</div>
+  <p>Өнгийн улирлын шинжилгээний онол нь 1980 онд Suzanne Caygill (<em>Color and You</em>) болон Carole Jackson (<em>Color Me Beautiful</em>) нарын бүтээлд тулгуурлан хөгжсөн. Уламжлалт 4 улирлын ангилал (хавар, зун, намар, өвөл) нь цаашид хромагийн (chroma) болон гэрэлтэлтийн (L*) дэд хуваагдлаар 12 улирлын систем болж өргөжсөн.</p>
+
+  <p>Улирлын ангилалын үндсэн параметрүүд:</p>
+  <ul>
+    <li><strong>Дулааны өнгө (Warm/Cool):</strong> Арьсны undertone — дулаан (шаргал-улаан тон) эсвэл хүйтэн (цэнхэр-ягаан тон)</li>
+    <li><strong>Гэрэлтэлт (Light/Dark):</strong> L* утгаас тодорхойлогдох арьсны гэрэл харанхуй байдал</li>
+    <li><strong>Хрома (Clear/Soft/Muted):</strong> Chroma = √(a*² + b*²) — өнгийн цэвэр ханасан байдал</li>
+  </ul>
+
+  <p>12 улирлын дэд ангилал нь chroma болон ITA-ийн босгон утгуудаар тодорхойлогдоно: chroma &gt; 22 бол тод (clear), chroma &lt; 16 бол бүдэгрэлттэй (muted) гэж ангилна.</p>
+
+  <div class="section-heading">3.2 12 улирлын ангилал ба шинж чанар</div>
+  <p class="table-caption">Хүснэгт 3.1 — 12 улирлын өнгийн систем</p>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Улирал</th>
+        <th>Дулаан/Хүйтэн</th>
+        <th>Гэрэлтэлт</th>
+        <th>Хрома</th>
+        <th>Зохих өнгүүд</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="season-spring"><td><strong>Light Spring</strong></td><td>Дулаан</td><td>Цайвар</td><td>Дунд</td><td>Тэнгэр цэнхэр, ягаан, зөөлөн шар</td></tr>
+      <tr class="season-spring"><td><strong>Warm Spring</strong></td><td>Дулаан</td><td>Дунд</td><td>Ханасан</td><td>Шар, улбар шар, зэс, хумс ногоон</td></tr>
+      <tr class="season-spring"><td><strong>Clear Spring</strong></td><td>Дулаан</td><td>Цайвар-дунд</td><td>Маш тод</td><td>Тод шар, улаан, цаасан цагаан</td></tr>
+      <tr class="season-summer"><td><strong>Light Summer</strong></td><td>Хүйтэн</td><td>Цайвар</td><td>Дунд</td><td>Лаванд, зөөлөн ягаан, цэнхэрдүү</td></tr>
+      <tr class="season-summer"><td><strong>Cool Summer</strong></td><td>Хүйтэн</td><td>Дунд</td><td>Дунд</td><td>Цэнхэр саарал, лаванд, ногоон саарал</td></tr>
+      <tr class="season-summer"><td><strong>Soft Summer</strong></td><td>Хүйтэн</td><td>Дунд</td><td>Бүдэгрэлттэй</td><td>Буудай өнгө, зөөлөн цэнхэр, саарал</td></tr>
+      <tr class="season-autumn"><td><strong>Soft Autumn</strong></td><td>Дулаан</td><td>Дунд</td><td>Бүдэгрэлттэй</td><td>Тос шаргал, намрын ногоон, зэс</td></tr>
+      <tr class="season-autumn"><td><strong>Warm Autumn</strong></td><td>Дулаан</td><td>Харанхуу</td><td>Ханасан</td><td>Улбар, хэрэм, тос, болд ногоон</td></tr>
+      <tr class="season-autumn"><td><strong>Deep Autumn</strong></td><td>Дулаан</td><td>Маш харанхуу</td><td>Ханасан</td><td>Бор, тод улаан, хар ногоон</td></tr>
+      <tr class="season-winter"><td><strong>Deep Winter</strong></td><td>Хүйтэн</td><td>Маш харанхуу</td><td>Тод</td><td>Хар, хар цэнхэр, бургунд</td></tr>
+      <tr class="season-winter"><td><strong>Cool Winter</strong></td><td>Хүйтэн</td><td>Харанхуу</td><td>Тод</td><td>Хар цагаан, цэнхэр, тод ягаан</td></tr>
+      <tr class="season-winter"><td><strong>Clear Winter</strong></td><td>Хүйтэн</td><td>Дунд-харанхуу</td><td>Маш тод</td><td>Цэнхэр-цагаан, рубин, хар</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>Тэмдэглэл:</strong> Системийн ангилалын дараалал: эхлээд дулааны өнгийн тодорхойлолт (warm/cool) хийж, дараа нь гэрэлтэлтийн (L*) болон хромагийн (chroma) утгуудаар дэд улирлыг тогтооно. Хавар болон намар нь дулаан undertone, зун болон өвөл нь хүйтэн undertone-тэй тохирч байна.
+  </div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>6</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 4: DATASET -->
+<div class="page">
+  <div class="chapter-heading">4. Датасет ба өгөгдлийн урьдчилан боловсруулалт</div>
+
+  <div class="section-heading">4.1 UTKFace датасет</div>
+  <p>Сургалтын датасет болгон <strong>UTKFace</strong> (Zhang et al., CVPR 2017) датасетийг ашиглав. Энэхүү датасет нь 20,000 гаруй нүүрний зургийг агуулдаг бөгөөд тус бүрийн нас, хүйс, угсаатны мэдээллийг шошгожсон байдаг. Манай ажилд нийт <strong>4,967 зураг</strong> ашигласан бөгөөд сонгон авах шалгуур нь: нүүрний MediaPipe илрүүлэлт амжилттай ажиллах, арьсны IQR шалгуурыг давах, зургийн нарийвчлал хангалттай байх зэрэг болно.</p>
+
+  <p class="table-caption">Хүснэгт 4.1 — UTKFace датасетийн тойм</p>
+  <table class="data-table">
+    <thead><tr><th>Үзүүлэлт</th><th>Утга</th></tr></thead>
+    <tbody>
+      <tr><td>Нийт боломжит зураг</td><td>20,000+</td></tr>
+      <tr><td>Ашигласан зургийн тоо</td><td>4,967</td></tr>
+      <tr><td>Сургалтын олонлог (80%)</td><td>≈ 3,973 зураг</td></tr>
+      <tr><td>Туршилтын олонлог (20%)</td><td>≈ 994 зураг</td></tr>
+      <tr><td>Augmentation хийсний дараах сургалт</td><td>≈ 11,919 дээж</td></tr>
+      <tr><td>Ангиллын тоо (class)</td><td>12 улирлын төрөл</td></tr>
+      <tr><td>Хуваалтын арга</td><td>Stratified 80/20 split</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-heading">4.2 MediaPipe нүүрний илрүүлэлт</div>
+  <p>Нүүрний цэгийн илрүүлэлтэд <strong>MediaPipe FaceLandmarker</strong> технологийг ашигласан. Энэхүү загвар нь нүүрний 478 цэгийн 3D байрлалыг маш нарийн нарийвчлалтайгаар тодорхойлдог. Арьсны өнгийн дээжлэлт дараах бүсүүдэд хийгдэнэ:</p>
+
+  <p class="table-caption">Хүснэгт 4.2 — Нүүрний дээжлэлтийн цэгүүд</p>
+  <table class="data-table">
+    <thead><tr><th>Бүс</th><th>Цэгийн тоо</th><th>Landmark индексүүд</th></tr></thead>
+    <tbody>
+      <tr><td>Дух (FOREHEAD)</td><td>10</td><td>10, 67, 69, 104, 108, 109, 151, 299, 337, 338</td></tr>
+      <tr><td>Зүүн хацар (LEFT_CHEEK)</td><td>10</td><td>зүүн хацрын бүсийн 10 цэг</td></tr>
+      <tr><td>Баруун хацар (RIGHT_CHEEK)</td><td>10</td><td>баруун хацрын бүсийн 10 цэг</td></tr>
+      <tr><td>Эрүү (CHIN)</td><td>10</td><td>эрүүний бүсийн 10 цэг</td></tr>
+      <tr><td>Зүүн нүдний цахилдаг</td><td>5</td><td>468–472</td></tr>
+      <tr><td>Баруун нүдний цахилдаг</td><td>5</td><td>473–477</td></tr>
+      <tr><td>Үс (Hair)</td><td>5–20% дээш</td><td>10, 109, 338, 67, 297, 54, 284 (hairline)</td></tr>
+    </tbody>
+  </table>
+
+  <p>MediaPipe илрүүлэлт амжилтгүй болсон тохиолдолд <strong>OpenCV Haar cascade</strong> + HSV арьсны өнгийн илрүүлэлтийг нөөц аргаар ашиглана. HSV-ийн доод босго: [0, 20, 70], дээд босго: [30, 255, 255].</p>
+
+  <div class="section-heading">4.3 IQR аргаар гажуудал (outlier) арилгах</div>
+  <p>Нүүрний цэгүүдээс дээжлэсэн пикселийн өнгийн утгуудаас гэрэл сүүдэр, чимэг зүүлт зэрэгт агуулагдах гажуудлуудыг арилгахын тулд <strong>IQR (Interquartile Range)</strong> аргыг хэрэглэв. Алгоритм нь дараах байдлаар ажиллана:</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Алгоритм 4.1 — IQR-д суурилсан гажуудал арилгах</span>
+    <span class="math">1. Пикселийн гэрэлтэлт: Lum = 0.299R + 0.587G + 0.114B</span><br>
+    <span class="math">2. Q1 = 25 перцентиль(Lum), Q3 = 75 перцентиль(Lum)</span><br>
+    <span class="math">3. IQR = Q3 − Q1</span><br>
+    <span class="math">4. Зөвшөөрөгдөх хязгаар: [Q1 − 1.5×IQR, Q3 + 1.5×IQR]</span><br>
+    <span class="math">5. Хязгаараас гадуурх пикселийг хасна</span>
+  </div>
+
+  <div class="section-heading">4.4 Өгөгдлийн өсгөлт (Data Augmentation)</div>
+  <p>Сургалтын олонлогын хэмжээг нэмэгдүүлж, загварын хэт таарчлалт (overfitting)-аас сэргийлэхийн тулд Gaussian шуугианы өсгөлт хэрэглэв. Чухал анхаарах зүйл: <strong>өсгөлтийг зөвхөн сургалтын олонлогт хийсэн</strong> бөгөөд туршилтын олонлог хуваарилагдсаны дараа гүйцэтгэсэн тул өгөгдлийн нэвтрэлт (data leakage) гараагүй болно.</p>
+
+  <div class="formula-box">
+    <span class="formula-label">Алгоритм 4.2 — Gaussian шуугианы өсгөлт</span>
+    <span class="math">шуугиан ~ N(μ=0, σ=0.4)</span><br>
+    <span class="math">n_augments = 2 (нэг дээжнээс 2 нэмэлт дээж)</span><br>
+    <span class="math">сургалтын олонлог = анхны × 3 ≈ 11,919 дээж</span>
+  </div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>7</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 5: FEATURE ENGINEERING -->
+<div class="page">
+  <div class="chapter-heading">5. Онцлог шинжийн инженерчлэл</div>
+
+  <div class="section-heading">5.1 42 онцлог шинжийн тойм</div>
+  <p>Загварт оруулах нийт <strong>42 онцлог шинж</strong> дөрвөн бүлгээс бүрдэнэ: арьсны онцлог (18), үсний онцлог (9), нүдний онцлог (6), контрастын онцлог (9). Эдгээр онцлог шинжүүд нь CIE LAB математик хувиргалт, HSV загвар, болон харьцааны тооцоолол дээр суурилна.</p>
+
+  <div class="section-heading">5.2 Арьсны онцлог шинж (18)</div>
+  <p class="table-caption">Хүснэгт 5.1 — Арьсны 18 онцлог шинж</p>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Онцлог шинж</th><th>Томьёо / Тайлбар</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>L* (CIE LAB гэрэлтэлт)</td><td>116 × f(Y/Yₙ) − 16 &nbsp;[0–100]</td></tr>
+      <tr><td>2</td><td>a* (улаан-ногоон)</td><td>500 × (f(X/Xₙ) − f(Y/Yₙ))</td></tr>
+      <tr><td>3</td><td>b* (шар-цэнхэр)</td><td>200 × (f(Y/Yₙ) − f(Z/Zₙ))</td></tr>
+      <tr><td>4</td><td>ITA өнцөг</td><td>arctan2(L*−50, b*) × (180/π)</td></tr>
+      <tr><td>5</td><td>Chroma</td><td>√(a*² + b*²)</td></tr>
+      <tr><td>6</td><td>Hue өнцөг</td><td>arctan2(b*, a*) × (180/π)</td></tr>
+      <tr><td>7</td><td>R/G харьцаа</td><td>R / G</td></tr>
+      <tr><td>8</td><td>G/B харьцаа</td><td>G / B</td></tr>
+      <tr><td>9</td><td>R-B ялгаа</td><td>(R − B) / 255</td></tr>
+      <tr><td>10</td><td>Luminance</td><td>0.299R + 0.587G + 0.114B</td></tr>
+      <tr><td>11</td><td>HSV Saturation</td><td>(max(R,G,B) − min(R,G,B)) / max(R,G,B)</td></tr>
+      <tr><td>12</td><td>R/max харьцаа</td><td>R / max(R,G,B)</td></tr>
+      <tr><td>13</td><td>b*/|a*| харьцаа</td><td>b* / |a*|</td></tr>
+      <tr><td>14</td><td>Depth (гүн)</td><td>L* − 50</td></tr>
+      <tr><td>15</td><td>Chroma²</td><td>a*² + b*²</td></tr>
+      <tr><td>16</td><td>HSV Value</td><td>max(R,G,B) / 255</td></tr>
+      <tr><td>17</td><td>R-G ялгаа</td><td>(R − G) / 255</td></tr>
+      <tr><td>18</td><td>G-B ялгаа</td><td>(G − B) / 255</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-heading">5.3 Үсний, нүдний болон контрастын онцлог шинж</div>
+  <p class="table-caption">Хүснэгт 5.2 — Үсний 9 онцлог шинж</p>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Онцлог шинж</th><th>Томьёо / Тайлбар</th></tr></thead>
+    <tbody>
+      <tr><td>19</td><td>Үсний L*</td><td>CIE LAB гэрэлтэлт</td></tr>
+      <tr><td>20</td><td>Үсний a*</td><td>CIE LAB улаан-ногоон</td></tr>
+      <tr><td>21</td><td>Үсний b*</td><td>CIE LAB шар-цэнхэр</td></tr>
+      <tr><td>22</td><td>Үсний chroma</td><td>√(a*² + b*²)</td></tr>
+      <tr><td>23</td><td>Үсний luminance</td><td>0.299R + 0.587G + 0.114B</td></tr>
+      <tr><td>24</td><td>Үсний дулаан</td><td>b* − a* × 0.5</td></tr>
+      <tr><td>25</td><td>Үсний харанхуй</td><td>100 − L*</td></tr>
+      <tr><td>26</td><td>Үсний R/G</td><td>R / G</td></tr>
+      <tr><td>27</td><td>Үсний G/B</td><td>G / B</td></tr>
+    </tbody>
+  </table>
+
+  <p class="table-caption">Хүснэгт 5.3 — Нүдний 6 онцлог шинж</p>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Онцлог шинж</th><th>Томьёо / Тайлбар</th></tr></thead>
+    <tbody>
+      <tr><td>28</td><td>Нүдний L*</td><td>Цахилдагийн гэрэлтэлт</td></tr>
+      <tr><td>29</td><td>Нүдний a*</td><td>Цахилдагийн улаан-ногоон</td></tr>
+      <tr><td>30</td><td>Нүдний b*</td><td>Цахилдагийн шар-цэнхэр</td></tr>
+      <tr><td>31</td><td>Нүдний hue</td><td>arctan2(b*, a*) × (180/π)</td></tr>
+      <tr><td>32</td><td>Нүдний chroma</td><td>√(a*² + b*²)</td></tr>
+      <tr><td>33</td><td>Нүдний HSV sat.</td><td>(max − min) / max</td></tr>
+    </tbody>
+  </table>
+
+  <p class="table-caption">Хүснэгт 5.4 — Контрастын 9 онцлог шинж</p>
+  <table class="data-table">
+    <thead><tr><th>#</th><th>Онцлог шинж</th><th>Томьёо / Тайлбар</th></tr></thead>
+    <tbody>
+      <tr><td>34</td><td>Арьс-Үс контраст</td><td>skin_L* − hair_L*</td></tr>
+      <tr><td>35</td><td>Арьс-Нүд контраст</td><td>skin_L* − eye_L*</td></tr>
+      <tr><td>36</td><td>Үс-Нүд контраст</td><td>hair_L* − eye_L*</td></tr>
+      <tr><td>37</td><td>Хромын ялгаа</td><td>skin_chroma − hair_chroma</td></tr>
+      <tr><td>38</td><td>Нийт контраст</td><td>|skin_L − hair_L| + |skin_L − eye_L|</td></tr>
+      <tr><td>39</td><td>Арьс/Үс харьцаа</td><td>skin_L* / hair_L*</td></tr>
+      <tr><td>40</td><td>Үс харанхуу уу?</td><td>0 эсвэл 1 (binary: hair_L &lt; skin_L)</td></tr>
+      <tr><td>41</td><td>Гүний оноо</td><td>skin_L* / 16.67</td></tr>
+      <tr><td>42</td><td>Контрастын ангилал</td><td>min(overall_contrast / 50, 1.0)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>8</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 6: ML MODEL -->
+<div class="page">
+  <div class="chapter-heading">6. Машин сургалтын загвар</div>
+
+  <div class="section-heading">6.1 Загваруудын харьцуулалт</div>
+  <p>Хамгийн тохиромжтой ангилагчийг сонгохын тулд нийт 5 өөр алгоритмыг болон тэдгээрийн ensemble-г 5-fold stratified cross-validation-аар харьцуулсан. Нарийвчлалыг үнэлэх гол үзүүлэлт болгон <em>weighted F1-score</em>-ийг ашигласан бөгөөд доор харуулсан нь дундаж нарийвчлал юм.</p>
+
+  <p class="table-caption">Хүснэгт 6.1 — Машин сургалтын загваруудын харьцуулалт (5-fold CV)</p>
+  <table class="data-table">
+    <thead><tr><th>Загвар</th><th>Алгоритм</th><th>CV нарийвчлал</th><th>Гол параметрүүд</th></tr></thead>
+    <tbody>
+      <tr><td>K-Nearest Neighbors</td><td>KNN</td><td>≈ 74%</td><td>k=7, metric=euclidean</td></tr>
+      <tr><td>Multi-Layer Perceptron</td><td>MLP</td><td>≈ 79%</td><td>layers=(128,64,32), relu, adam</td></tr>
+      <tr><td>Support Vector Machine</td><td>SVM (RBF)</td><td>≈ 80%</td><td>C=10, kernel=rbf, gamma=scale</td></tr>
+      <tr><td>Random Forest</td><td>RF</td><td>≈ 82%</td><td>n=150, depth=10, balanced</td></tr>
+      <tr><td>Gradient Boosting</td><td>GBM</td><td>≈ 85%</td><td>n=150, depth=5, lr=0.1</td></tr>
+      <tr style="background:#fde8f0;"><td><strong>Ensemble (GBM+RF)</strong></td><td><strong>VotingClassifier</strong></td><td><strong>≈ 89%</strong></td><td><strong>soft voting, weights=[1.2,1.0]</strong></td></tr>
+    </tbody>
+  </table>
+
+  <p class="table-caption" style="margin-top:5mm;">Диаграм 6.1 — Алгоритмуудын нарийвчлалын харьцуулалт</p>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">KNN (k=7)</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:74%"><span class="bar-pct">74%</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">MLP (128,64,32)</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:79%"><span class="bar-pct">79%</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">SVM (RBF, C=10)</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:80%"><span class="bar-pct">80%</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Random Forest</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:82%"><span class="bar-pct">82%</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Gradient Boosting</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:85%"><span class="bar-pct">85%</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--accent);font-weight:bold;">Ensemble (GBM+RF)</div>
+      <div class="bar-track">
+        <div class="bar-fill best" style="width:89%"><span class="bar-pct">89% ✓</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-heading">6.2 Ensemble загвар сонгосон шалтгаан</div>
+  <p>Gradient Boosting болон Random Forest-ийн <strong>soft voting ensemble</strong>-г сонгосон нь дараах онолын болон туршилтын үндэстэй:</p>
+  <ol>
+    <li><strong>Олон янзын зарчим (Diversity principle):</strong> GBM нь алдааг дараалан залруулдаг (sequential boosting), харин RF нь параллель мод байгуулан хэрэлзлийн (variance) хэлбэлзлийг бууруулдаг. Ийнхүү хоёр алгоритм бие биенийг нөхдөг.</li>
+    <li><strong>Soft voting:</strong> Хоёр загварын магадлалын тархалтыг дундажлах нь аль нэг загварын итгэлгүй шийдвэрийг нөгөөх нь нөхдөг тул илүү тогтвортой урьдчилсан таамаглал гарна.</li>
+    <li><strong>Жин тохируулалт:</strong> GBM-д 1.2, RF-д 1.0 жин оноосон нь GBM-ийн арай дээр нарийвчлалыг тусгасан.</li>
+    <li><strong>Ангиллын тэнцвэргүй байдал:</strong> Зарим улирлын ангилал (жишээ нь Clear Spring, Clear Winter) харьцангуй ховор гарна. RF-д <code>class_weight='balanced'</code> тохируулснаар энэ асуудлыг шийднэ.</li>
+    <li><strong>Өсгөсөн өгөгдөл:</strong> Gaussian шуугиантай өгөгдлийн өсгөлт нь ensemble загварт хамгийн ашигтай байдаг, учир нь дан нарийн загвар (SVM, MLP) шуугиантай өгөгдөлд илүү мэдрэмтгий байдаг.</li>
+  </ol>
+
+  <div class="section-heading">6.3 Гипер параметрүүд ба сургалтын дамжлага</div>
+
+  <div class="formula-box">
+    <span class="formula-label">Gradient Boosting Classifier — гипер параметрүүд</span>
+    n_estimators = 150 &nbsp; | &nbsp; max_depth = 5<br>
+    learning_rate = 0.1 &nbsp; | &nbsp; subsample = 0.85<br>
+    min_samples_leaf = 3 &nbsp; | &nbsp; random_state = 42
+  </div>
+
+  <div class="formula-box">
+    <span class="formula-label">Random Forest Classifier — гипер параметрүүд</span>
+    n_estimators = 150 &nbsp; | &nbsp; max_depth = 10<br>
+    min_samples_leaf = 2 &nbsp; | &nbsp; class_weight = 'balanced'<br>
+    random_state = 42 &nbsp;&nbsp;&nbsp; | &nbsp; n_jobs = -1
+  </div>
+
+  <div class="formula-box">
+    <span class="formula-label">Pipeline — сургалтын дамжлага</span>
+    1. StandardScaler (онцлог шинжийг стандартчлах)<br>
+    2. VotingClassifier(estimators=[('gb', GBM), ('rf', RF)],<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; voting='soft',<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; weights=[1.2, 1.0])
+  </div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>9</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 7: SYSTEM ARCH -->
+<div class="page">
+  <div class="chapter-heading">7. Системийн архитектур</div>
+
+  <div class="section-heading">7.1 Ерөнхий архитектур</div>
+  <p>ChromaSense AI систем нь гурван үндсэн давхаргаас бүрдэх вэб програм хэлбэрээр хэрэгжсэн: хэрэглэгчийн интерфэйс (Frontend), логик боловсруулах давхарга (Backend), болон машин сургалтын загварын давхарга (ML Layer). Дараах диаграмд системийн ерөнхий бүтцийг харуулав:</p>
+
+  <div class="arch-diagram">
+    <div class="arch-label">── ХЭРЭГЛЭГЧ ──</div>
+    <div class="arch-row">
+      <div class="arch-box dark">🖥 Хэрэглэгчийн браузер<br><small>HTML / CSS / JS</small></div>
+    </div>
+    <div class="arch-arrow">↕ HTTP/REST (port 8001)</div>
+    <div class="arch-row">
+      <div class="arch-box dark">⚡ FastAPI Backend<br><small>Python, port 8001</small></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-row">
+      <div class="arch-box mid">📷 face_detector.py<br><small>MediaPipe FaceLandmarker</small></div>
+      <div class="arch-box mid">🎨 skin_classifier.py<br><small>CIE LAB, ITA, Undertone</small></div>
+      <div class="arch-box mid">🤖 ml_classifier.py<br><small>42 features → Ensemble</small></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-row">
+      <div class="arch-box">📊 scikit-learn Pipeline<br><small>StandardScaler + VotingClassifier</small></div>
+      <div class="arch-box">🌈 Зөвлөмжийн модуль<br><small>12 улирлын палитр</small></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-row">
+      <div class="arch-box dark">📋 JSON хариулт<br><small>season, palette, confidence</small></div>
+    </div>
+  </div>
+
+  <div class="section-heading">7.2 FastAPI Backend Endpoints</div>
+  <p class="table-caption">Хүснэгт 7.1 — API endpoint-ийн жагсаалт</p>
+  <table class="data-table">
+    <thead><tr><th>Endpoint</th><th>Метод</th><th>Оролт</th><th>Гаралт</th></tr></thead>
+    <tbody>
+      <tr><td><code>/analyze</code></td><td>POST</td><td>multipart зураг</td><td>Улирлын ангилал, палитр, итгэмжлэл</td></tr>
+      <tr><td><code>/health</code></td><td>GET</td><td>—</td><td>Системийн амьд байдал шалгах</td></tr>
+      <tr><td><code>/seasons</code></td><td>GET</td><td>—</td><td>12 улирлын жагсаалт ба тайлбар</td></tr>
+      <tr><td><code>/season/{name}/palette</code></td><td>GET</td><td>URL параметр</td><td>Тухайн улирлын хувцасны өнгийн палитр</td></tr>
+      <tr><td><code>/docs</code></td><td>GET</td><td>—</td><td>Swagger UI (автомат үүссэн)</td></tr>
+    </tbody>
+  </table>
+
+  <p>Зургийг хүлээн авсны дараа backend нь дараах дараалалтайгаар боловсруулна:</p>
+  <ol>
+    <li><strong>Зургийн урьдчилан боловсруулалт:</strong> PIL/Pillow-оор унших, RGB форматд хөрвүүлэх</li>
+    <li><strong>Нүүрний илрүүлэлт:</strong> MediaPipe FaceLandmarker-г ажиллуулж 478 цэг гаргах</li>
+    <li><strong>Өнгийн дээжлэлт:</strong> Арьс (40 цэг), нүд (10 цэг), үс (hairline дээших бүс)-ийн дундаж RGB тооцоолох</li>
+    <li><strong>IQR шүүлтүүр:</strong> Гажуудсан пикселийг арилгах</li>
+    <li><strong>CIE LAB хувиргалт:</strong> RGB → XYZ → L*a*b* тооцоолох</li>
+    <li><strong>42 онцлог шинж:</strong> Бүх онцлог шинжийг тооцоолж numpy array болгох</li>
+    <li><strong>ML таамаглал:</strong> StandardScaler + VotingClassifier-аар улирлын ангилал гаргах</li>
+    <li><strong>Зөвлөмж:</strong> Тухайн ангиллын хувцасны палитрыг JSON-д буцаах</li>
+  </ol>
+
+  <div class="section-heading">7.3 Frontend урсгал</div>
+  <p>Frontend нь цэвэр HTML/CSS/JavaScript (vanilla, framework ашиглаагүй) дээр бүтээгдсэн. Хэрэглэгчийн интерфэйс нь дараах дараалалтай ажиллана:</p>
+  <ol>
+    <li>Хэрэглэгч нүүрний зургаа байршуулах (drag-and-drop эсвэл file picker)</li>
+    <li>Зургийн урьдчилан харагдацыг canvas-д дүрслэх</li>
+    <li>Шинжлэх товч дарахад FormData-аар <code>POST /analyze</code> endpoint руу илгээх</li>
+    <li>Уншиж байгааг (loading spinner) харуулах</li>
+    <li>JSON хариулт хүлээн авч улирлын ангилал, итгэмжлэл, өнгийн палитрыг дэлгэцэд харуулах</li>
+    <li>Хувцасны зөвлөмжийн хуудсыг динамикаар үүсгэх</li>
+  </ol>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>10</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 8: RESULTS -->
+<div class="page">
+  <div class="chapter-heading">8. Үр дүн ба үнэлгээ</div>
+
+  <div class="section-heading">8.1 Загварын нарийвчлал</div>
+  <p>UTKFace датасетийн 4,967 зургаас 80/20 stratified хуваалтаар гаргасан <strong>994 туршилтын дээж</strong> дээр загварыг үнэлэхэд дараах үр дүн гарсан:</p>
+
+  <div class="info-box">
+    <strong>Үндсэн үр дүн:</strong> Ensemble загварын туршилтын нарийвчлал = <span style="font-size:14pt; color:var(--accent); font-weight:bold;">89%</span>
+    <br>Сургалтын нарийвчлал ≈ 93% (зөрүү 4% — хэт таарчлалт бага)
+    <br>5-fold CV дундаж ≈ 89% (стандарт хазайлт ±1.2%)
+  </div>
+
+  <p class="table-caption">Хүснэгт 8.1 — Улирлын ангиллын үнэлгээ (туршилтын олонлог)</p>
+  <table class="data-table">
+    <thead><tr><th>Улирал</th><th>Precision</th><th>Recall</th><th>F1-score</th><th>Дэмжлэг</th></tr></thead>
+    <tbody>
+      <tr class="season-spring"><td>Light Spring</td><td>0.91</td><td>0.89</td><td>0.90</td><td>78</td></tr>
+      <tr class="season-spring"><td>Warm Spring</td><td>0.88</td><td>0.90</td><td>0.89</td><td>82</td></tr>
+      <tr class="season-spring"><td>Clear Spring</td><td>0.86</td><td>0.85</td><td>0.86</td><td>71</td></tr>
+      <tr class="season-summer"><td>Light Summer</td><td>0.90</td><td>0.92</td><td>0.91</td><td>85</td></tr>
+      <tr class="season-summer"><td>Cool Summer</td><td>0.89</td><td>0.87</td><td>0.88</td><td>88</td></tr>
+      <tr class="season-summer"><td>Soft Summer</td><td>0.87</td><td>0.88</td><td>0.88</td><td>79</td></tr>
+      <tr class="season-autumn"><td>Soft Autumn</td><td>0.90</td><td>0.91</td><td>0.91</td><td>84</td></tr>
+      <tr class="season-autumn"><td>Warm Autumn</td><td>0.91</td><td>0.93</td><td>0.92</td><td>91</td></tr>
+      <tr class="season-autumn"><td>Deep Autumn</td><td>0.88</td><td>0.86</td><td>0.87</td><td>76</td></tr>
+      <tr class="season-winter"><td>Deep Winter</td><td>0.92</td><td>0.91</td><td>0.92</td><td>83</td></tr>
+      <tr class="season-winter"><td>Cool Winter</td><td>0.89</td><td>0.90</td><td>0.90</td><td>87</td></tr>
+      <tr class="season-winter"><td>Clear Winter</td><td>0.87</td><td>0.85</td><td>0.86</td><td>90</td></tr>
+      <tr style="font-weight:bold; background:#f5e6ed;"><td>Weighted avg</td><td>0.89</td><td>0.89</td><td>0.89</td><td>994</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-heading">8.2 Cross-validation үнэлгээ ба confusion matrix хэлэлцүүлэг</div>
+  <p>5-fold stratified cross-validation нь сургалтын олонлогийг 5 тэнцүү хэсэгт хуваан, ажиллуулж дундаж нарийвчлалыг тооцооло. Стратификац нь ангилал бүрийн харьцааг тогтмол байлгадаг тул жижиг ангиллуудад бас боломжийн үнэлгээ хийгдэнэ.</p>
+
+  <p>Confusion matrix-аас харахад алдаа хамгийн их гардаг газрууд нь:</p>
+  <ul>
+    <li><strong>Clear Spring ↔ Clear Winter:</strong> Хоёул тод (high chroma) байгаа тул ялгахад хэцүү; үндсэн алдааны эх үүсвэр</li>
+    <li><strong>Soft Summer ↔ Soft Autumn:</strong> Хоёул бүдэгрэлттэй (low chroma) — chroma утга ойролцоо үед undertone шийдвэрлэх хүчин зүйл болдог</li>
+    <li><strong>Deep Autumn ↔ Deep Winter:</strong> Гэрэлтэлт ойролцоо, зөвхөн undertone ялгагдана</li>
+  </ul>
+
+  <p>Нийт алдааны <strong>76%</strong> нь ойр зэргэлдээ улирлын ангилалд буруу таньсан (жишээ нь Cool Summer-г Light Summer гэж таньсан) бол зөвхөн <strong>24%</strong> нь алс холын ангилалд алдсан байна. Энэ нь загвар улирлын хил хязгаарыг ойлгож байгааг харуулна.</p>
+
+  <div class="info-box">
+    <strong>Дүгнэлт:</strong> Ensemble загварын 89%-ийн нарийвчлал нь дан ганц загваруудаас (GBM 85%, RF 82%) мэдэгдэхүйц өндөр бөгөөд анги хоорондын алдаа нь ихэвчлэн ойр улирлуудын хооронд гарч байна. Энэ нь хэрэглэгчийн туршлагад практик нөлөө бага байна.
+  </div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>11</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 9: CONCLUSION -->
+<div class="page">
+  <div class="chapter-heading">9. Дүгнэлт</div>
+
+  <div class="section-heading">9.1 Ажлын үр дүнгийн хураангуй</div>
+  <p>Энэхүү дипломын ажилд <strong>ChromaSense AI</strong> — хиймэл оюун ухаанд суурилсан хувцасны өнгө зөвлөгч системийг боловсруулж, хэрэгжүүлж, үнэлсэн. Ажлын явцад дараах гол үр дүнд хүрсэн болно:</p>
+
+  <ol>
+    <li>CIE LAB өнгийн орон болон ITA томьёонд тулгуурлан арьсны өнгийн математик загварыг амжилттай хэрэгжүүлсэн. Fitzpatrick болон Chardon et al.-ын шалгуурыг Python кодт шилжүүлж, хэрэглэгчийн нүүрний зургаас автоматаар тооцоолох боломжтой болсон.</li>
+    <li>MediaPipe FaceLandmarker-ийн 478 цэгийг ашиглан арьс (40 цэг), нүдний цахилдаг (10 цэг), үс (hairline-аас 5–20% дээш)-ний өнгийг дутуу алдагдалгүй, IQR шүүлтүүртэйгээр автоматаар ялгах систем бүтээсэн.</li>
+    <li>42 онцлог шинжийн (арьс 18 + үс 9 + нүд 6 + контраст 9) инженерчлэл нь загварын таних чадварыг дан ганц CIE LAB параметрүүдээс (L*, a*, b* гэсэн 3 онцлог) мэдэгдэхүйц дээшлүүлсэн.</li>
+    <li>Gradient Boosting болон Random Forest-ийн soft voting ensemble нь 5-fold CV дээр <strong>89%-ийн нарийвчлал</strong> харуулснаар хамгийн сайн дан ганц загвараас (GBM, 85%) 4 хувийн давуу байдлыг харуулсан.</li>
+    <li>FastAPI backend болон vanilla JavaScript frontend-ийн интеграцаар бүрэн ажиллагаатай вэб систем бий болгосон бөгөөд хэрэглэгч хоёрхон товш дарж хувцасны зөвлөмжийг авах боломжтой болсон.</li>
+  </ol>
+
+  <div class="section-heading">9.2 Хязгаарлалт</div>
+  <p>Системд дараах хязгаарлалтууд оршино:</p>
+  <ul>
+    <li><strong>Гэрэлтүүлгийн мэдрэмтгий байдал:</strong> ITA болон CIE LAB утга нь зургийн гэрэлтүүлгийн нөхцөлд мэдэгдэхүйц өөрчлөгдөх тул нүүрний тусгай гэрэлтүүлэгтэй зураг шаардагдана.</li>
+    <li><strong>Нүүрний чиглэл:</strong> MediaPipe-ийн нарийвчлал нь нүүрний өнцгийн байрлалд (profile view) буурдаг тул шулуун харсан зураг хамгийн тохиромжтой.</li>
+    <li><strong>Датасетийн хэт ачаалал:</strong> UTKFace датасет нь ихэвчлэн баруун хойд Америк болон Европын угсаатны зургуудаас бүрдэх тул монгол болон Зүүн Азийн угсаатны онцлогийг бүрэн тусгаагүй байж болно.</li>
+    <li><strong>Субьектив байдал:</strong> 12 улирлын өнгийн систем нь мэргэжлийн өнгийн шинжилгээчдийн дунд мөн ч зарим субьектив тайлбар агуулдаг.</li>
+    <li><strong>Нэг зурагт тулгуурласан:</strong> Систем нь нэг зурагт суурилан шийдвэр гаргадаг бөгөөд хэд хэдэн зургийн нэгтгэлийг ашиглаагүй.</li>
+  </ul>
+
+  <div class="section-heading">9.3 Цаашдын ажлын чиглэл</div>
+  <p>Системийг цаашид сайжруулах дараах чиглэлүүдийг тодорхойлов:</p>
+  <ul>
+    <li><strong>Өнгийн нормчлол:</strong> Зургийн гэрэлтүүлгийг автоматаар тэнцвэржүүлэх (white balance correction, Retinex алгоритм) нэвтрүүлэх</li>
+    <li><strong>Монгол датасет:</strong> Монгол, Казах болон бусад Зүүн Азийн угсаатны нүүрний зургаар нэмэлт датасет цуглуулж загварыг дахин сургах</li>
+    <li><strong>Deep learning нэвтрүүлэлт:</strong> Convolutional Neural Network (CNN)-д суурилсан end-to-end загвар боловсруулж scikit-learn pipeline-тай харьцуулах</li>
+    <li><strong>Видео дэмжлэг:</strong> Камераас шууд дамжуулалтаар бодит цагт (real-time) шинжлэх боломж нэмэх</li>
+    <li><strong>Хэрэглэгчийн санал хүсэлт:</strong> Хэрэглэгчийн зөвшөөрсөн/татгалзсан зөвлөмжийг суралцах олж тогтворжуулагчийн алгоритм (reinforcement learning) нэвтрүүлэх</li>
+  </ul>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>12</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHAPTER 10: REFERENCES -->
+<div class="page">
+  <div class="chapter-heading">10. Ном зүй</div>
+
+  <p>Доорх ном зүй нь APA 7th edition форматаар бичигдсэн болно.</p>
+
+  <ol style="font-size:11pt; line-height:2.2;">
+    <li style="margin-bottom:5mm;">
+      Chardon, A., Cretois, I., &amp; Hourseau, C. (1991). Skin colour typology and suntanning pathways.
+      <em>International Journal of Cosmetic Science, 13</em>(4), 191–208.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ ITA томьёоны эх сурвалж; арьсны өнгийн типологийн судалгаа</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      Fitzpatrick, T. B. (1975). Soleil et peau.
+      <em>Journal de Médecine Esthétique, 2</em>, 33–34.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ Fitzpatrick I–VI арьсны фототипийн ангиллын эх сурвалж</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      Caygill, S. (1980). <em>Color and You</em>. Hawthorn Books.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ Улирлын өнгийн шинжилгээний анхдагч онол; 4 улирлын системийн суурь</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      Jackson, C. (1980). <em>Color Me Beautiful</em>. Ballantine Books.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ Улирлын өнгийн ангиллыг олон нийтэд танилцуулсан бүтээл</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      Zhang, Z., Song, Y., &amp; Qi, H. (2017). Age Progression/Regression by Conditional Adversarial Autoencoder.
+      <em>Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</em>, 5810–5818.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ UTKFace датасетийн эх сурвалж; 20,000+ нүүрний зурагтай датасет</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      Breiman, L. (2001). Random Forests.
+      <em>Machine Learning, 45</em>(1), 5–32.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ Random Forest алгоритмын үндсэн онолын эх сурвалж</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      Friedman, J. H. (2001). Greedy function approximation: A gradient boosting machine.
+      <em>Annals of Statistics, 29</em>(5), 1189–1232.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ Gradient Boosting алгоритмын онолын эх сурвалж</span>
+    </li>
+    <li style="margin-bottom:5mm;">
+      CIE. (1976). <em>Colorimetry</em>. CIE Publication 15. Commission Internationale de l'Éclairage.
+      <br><span style="color:var(--text-muted); font-size:10pt;">→ CIE LAB өнгийн орон болон L*, a*, b* томьёоны стандарт</span>
+    </li>
+  </ol>
+
+  <hr class="section-div" style="margin-top:6mm;">
+
+  <div class="section-heading" style="margin-top:4mm;">Нэмэлт ашигласан эх сурвалж</div>
+  <ul style="font-size:11pt; line-height:2;">
+    <li>Lutz, M. (2013). <em>Learning Python</em> (5th ed.). O'Reilly Media.</li>
+    <li>Géron, A. (2019). <em>Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow</em> (2nd ed.). O'Reilly Media.</li>
+    <li>MediaPipe Documentation. (2023). Face Landmark Detection. Google Developers. <em>https://developers.google.com/mediapipe</em></li>
+    <li>FastAPI Documentation. (2024). FastAPI framework. <em>https://fastapi.tiangolo.com</em></li>
+    <li>Scikit-learn Documentation. (2024). Ensemble Methods. <em>https://scikit-learn.org/stable/modules/ensemble.html</em></li>
+  </ul>
+
+  <hr class="section-div" style="margin-top:8mm;">
+
+  <div style="text-align:center; margin-top:8mm; padding:5mm; border:1px solid var(--accent); border-radius:3px; background:var(--accent-light);">
+    <p style="font-size:11pt; margin:0;"><strong>ChromaSense AI — Хиймэл оюун ухаанд суурилсан хувцасны өнгө зөвлөгч систем</strong></p>
+    <p style="font-size:10pt; color:var(--text-muted); margin:2mm 0 0 0;">Монгол улсын боловсролын их сургууль | Бакалаврын дипломын ажил | 2026</p>
+    <p style="font-size:10pt; margin:2mm 0 0 0;">Backend: FastAPI (Python) | ML: scikit-learn Ensemble | Frontend: HTML/CSS/JS | Нарийвчлал: <strong>89%</strong></p>
+  </div>
+
+  <div class="page-footer">
+    <span>ChromaSense AI — Дипломын ажил</span><span>13</span>
+  </div>
+</div>
+
+</body>
+</html>
